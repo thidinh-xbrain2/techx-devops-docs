@@ -1,113 +1,178 @@
-# 01 · Cross-tenant access: XBrain đăng nhập AWS Landing Zone của TechX
+# Cho phép user XBrain đăng nhập AWS Landing Zone qua Microsoft Entra ID của TechX
 
-**Người soạn:** Nguyễn Đình Thi · **Trạng thái:** Chờ review · **Người đọc:** người review, team XBrain cần vào AWS
+**Người soạn:** Nguyễn Đình Thi · **Trạng thái:** Chờ review · **Người đọc:** người review, admin Entra ID của TechX và XBrain
 
-## 1. Bài toán
+*Trang này giả định IAM Identity Center của AWS Landing Zone đã được kết nối với tenant Microsoft Entra ID của TechX bằng SAML và SCIM.*
 
-- AWS Landing Zone dùng Entra ID của tenant **TechX** (`@techxcorp.com`) làm IdP cho IAM Identity Center (SAML + SCIM).
-- Team XBrain có tài khoản ở tenant **XBrain** (`@xbrain.com.vn`).
-- Cần: user XBrain đăng nhập AWS bằng chính tài khoản XBrain, không cấp thêm tài khoản `@techxcorp.com`.
+AWS Landing Zone dùng tenant Microsoft Entra ID của TechX (`techxcorp.com`) làm identity source cho IAM Identity Center. User của XBrain có tài khoản ở một tenant khác (`xbrain.com.vn`). Trang này hướng dẫn cách đưa user XBrain vào tenant TechX dưới dạng guest (B2B collaboration), để họ đăng nhập AWS access portal bằng chính tài khoản XBrain.
 
-![Tổng quan](../images/cross-tenant-overview.png)
+Mỗi instance IAM Identity Center chỉ có một identity source, vì vậy không thể thêm tenant XBrain làm identity source thứ hai. Để biết thêm, xem [Manage your identity source](https://docs.aws.amazon.com/singlesignon/latest/userguide/manage-your-identity-source.html).
 
-## 2. Giải pháp
+![Tổng quan cross-tenant](../images/cross-tenant-overview.png)
 
-User XBrain được đưa vào tenant TechX dưới dạng **guest (B2B)**. TechX gán guest vào app AWS, SCIM đẩy user sang IAM Identity Center.
+## Cách hoạt động
 
 ```mermaid
 flowchart LR
-  subgraph X[Tenant XBrain @xbrain.com.vn]
-    XU[User XBrain] --> XG[Group Security]
+  subgraph X["Tenant XBrain (xbrain.com.vn)"]
+    XU[User XBrain] --> XG[Security group]
   end
-  subgraph T[Tenant TechX @techxcorp.com]
-    CTA[Cross-tenant access<br/>Inbound: chỉ group XBrain]
+  subgraph T["Tenant TechX (techxcorp.com)"]
+    CTA[Cross-tenant access settings]
     GU[Guest user]
     TG[Group trong TechX]
     APP[Enterprise app<br/>AWS IAM Identity Center]
   end
   subgraph A[AWS Landing Zone]
-    IIC[IAM Identity Center] --> PS[Permission set × account]
+    IIC[IAM Identity Center] --> PS[Permission set và account]
   end
-  XG -->|B2B invite / sync| CTA --> GU --> TG --> APP
-  APP -->|SAML login| IIC
-  APP -->|SCIM ~40 phút/chu kỳ| IIC
+  XG --> CTA --> GU --> TG --> APP
+  APP -->|SAML| IIC
+  APP -->|SCIM| IIC
 ```
+
+1. Admin TechX cho phép tenant XBrain trong **Cross-tenant access settings**, chỉ áp dụng cho một security group của XBrain.
+2. Admin TechX mời user XBrain. Mỗi user trở thành một guest user trong tenant TechX.
+3. Guest user được thêm vào một group trong tenant TechX. Group này được gán vào enterprise application **AWS IAM Identity Center**.
+4. Microsoft Entra ID provisioning service đồng bộ user và group sang IAM Identity Center bằng SCIM.
+5. Khi user mở AWS access portal, Entra ID của TechX chuyển user về tenant XBrain để xác thực, sau đó gửi SAML assertion về IAM Identity Center.
 
 ```mermaid
 sequenceDiagram
-  participant U as User @xbrain.com.vn
+  participant U as User XBrain
   participant AWS as AWS access portal
-  participant T as Entra TechX
-  participant X as Entra XBrain
+  participant T as Entra ID TechX
+  participant X as Entra ID XBrain
   U->>AWS: Mở access portal
-  AWS->>T: Chuyển sang đăng nhập SAML
-  T->>X: Nhận ra guest XBrain, chuyển về tenant gốc
-  X-->>T: Xác thực (mật khẩu + MFA)
+  AWS->>T: Chuyển hướng SAML
+  T->>X: Xác thực tại tenant gốc
+  X-->>T: Kết quả xác thực và MFA
   T-->>AWS: SAML assertion
-  AWS-->>U: Danh sách account + permission set
+  AWS-->>U: Danh sách account và permission set
 ```
 
-**Phương án đã loại**
+## Điều kiện tiên quyết
+
+Trước khi bắt đầu, hãy đảm bảo:
+
+- Ở tenant TechX, bạn có role **Security Administrator** (để sửa cross-tenant access settings) và **Cloud Application Administrator** (để gán user vào enterprise application).
+- Ở tenant XBrain, bạn có role **Groups Administrator** để tạo security group.
+- Bạn có tenant ID hoặc domain của tenant XBrain.
+
+> **Quan trọng**
+> Tài khoản không có role Security Administrator sẽ nhận thông báo *You do not have permission to view this data* khi mở **Cross-tenant access settings**.
+
+## Bước 1: Tạo security group ở tenant XBrain
+
+**Để tạo security group**
+
+1. Đăng nhập [Microsoft Entra admin center](https://entra.microsoft.com) của tenant XBrain.
+2. Chọn **Groups** > **All groups** > **New group**.
+3. Trong **Group type**, chọn **Security**. Trong **Membership type**, chọn **Assigned**.
+4. Nhập tên group, thêm các user cần truy cập AWS, sau đó chọn **Create**.
+5. Mở group vừa tạo và ghi lại **Object ID**. Bạn cần giá trị này ở Bước 2.
+
+## Bước 2: Cho phép tenant XBrain trong cross-tenant access settings của TechX
+
+**Để thêm tenant XBrain**
+
+1. Đăng nhập Microsoft Entra admin center của tenant TechX.
+2. Chọn **External Identities** > **Cross-tenant access settings**.
+3. Chọn tab **Organizational settings**, sau đó chọn **Add organization**.
+4. Nhập tenant ID hoặc domain `xbrain.com.vn`, sau đó chọn **Add**.
+
+**Để giới hạn user XBrain được phép vào**
+
+1. Trong danh sách organization, chọn **Inherited from default** ở cột **Inbound access** của XBrain.
+2. Chọn tab **B2B collaboration**, sau đó chọn **Customize settings**.
+3. Trong **External users and groups**, chọn **Allow access** và **Select external users and groups**.
+4. Chọn **Add external users and groups**, nhập Object ID của group ở Bước 1, sau đó chọn **Save**.
+
+**Để tin MFA của tenant XBrain (khuyến nghị)**
+
+1. Trong cùng trang, chọn tab **Trust settings**.
+2. Chọn **Trust multifactor authentication from Microsoft Entra tenants**, sau đó chọn **Save**.
+
+> **Lưu ý**
+> Nếu không bật trust MFA, user XBrain phải đăng ký thêm MFA ở tenant TechX trong lần đăng nhập đầu tiên.
+
+Để biết thêm, xem [Cross-tenant access overview](https://learn.microsoft.com/en-us/entra/external-id/cross-tenant-access-overview).
+
+## Bước 3: Mời user XBrain vào tenant TechX
+
+**Để mời user**
+
+1. Trong Microsoft Entra admin center của tenant TechX, chọn **Users** > **All users** > **New user** > **Invite external user**.
+2. Nhập email `@xbrain.com.vn` của user, sau đó chọn **Review + invite** > **Invite**.
+3. User mở email mời và chấp nhận lời mời.
+
+> **Lưu ý**
+> Nếu user không nhận được email, mở guest user trong tenant TechX, copy link mời và gửi trực tiếp cho user. Nếu user báo lỗi khi chấp nhận, kiểm tra user đã là member của group ở Bước 1 chưa.
+
+**Để xác minh**
+
+- Trong tenant TechX, mở user và kiểm tra **User type** là **Guest** và **Invitation state** là **Accepted**.
+
+## Bước 4: Cấu hình claim cho guest user
+
+Email của guest user có dạng `exampleuser_domain.com#EXT#@domain.onmicrosoft.com`. IAM Identity Center không chấp nhận định dạng `#EXT#`, vì vậy cần map `Name ID` của guest sang thuộc tính `user.mail`. Để biết thêm, xem [Microsoft Entra ID Guest Account Synchronization](https://docs.aws.amazon.com/singlesignon/latest/userguide/idp-microsoft-entra.html).
+
+**Để cấu hình claim**
+
+1. Trong tenant TechX, chọn **Enterprise applications** > **AWS IAM Identity Center** > **Single sign-on**.
+2. Chọn **Edit** bên cạnh **Attributes & Claims**.
+3. Chọn **Unique User Identifier (Name ID)**.
+4. Tạo hai claim condition:
+   - User type **Members**: source attribute `user.userprincipalname`.
+   - User type **External guests**: source attribute `user.mail`.
+5. Chọn **Save**.
+
+## Bước 5: Gán guest user vào AWS IAM Identity Center
+
+**Để gán user và đồng bộ**
+
+1. Trong tenant TechX, tạo một security group (ví dụ `xbrain-aws-devops`) và thêm các guest user XBrain vào group.
+2. Chọn **Enterprise applications** > **AWS IAM Identity Center** > **Users and groups** > **Add user/group**, chọn group vừa tạo, sau đó chọn **Assign**.
+3. Chọn **Provisioning** > **Provision on demand** để đồng bộ ngay, hoặc đợi chu kỳ đồng bộ tiếp theo (khoảng 40 phút). Để biết thêm, xem [How provisioning works](https://learn.microsoft.com/en-us/entra/identity/app-provisioning/how-provisioning-works).
+
+> **Quan trọng**
+> Provisioning service không đọc nested group. Chỉ user là member trực tiếp của group được gán mới được đồng bộ. Group của tenant XBrain không thể gán trực tiếp vào enterprise application của tenant TechX.
+
+## Bước 6: Xác minh truy cập AWS
+
+**Để xác minh**
+
+1. Trong IAM Identity Center, chọn **Users** và kiểm tra guest user đã xuất hiện.
+2. Gán group vào AWS account với permission set tương ứng.
+3. User mở AWS access portal, đăng nhập bằng tài khoản `@xbrain.com.vn` và kiểm tra thấy đúng account.
+
+## Phương án đã loại
 
 | Phương án | Lý do loại |
 |---|---|
-| Tạo tài khoản `@techxcorp.com` cho từng người XBrain | Mỗi người 2 tài khoản, 2 mật khẩu; nghỉ việc ở XBrain không tự khoá tài khoản TechX |
-| Nối thêm IdP XBrain vào IAM Identity Center | Mỗi instance IIC chỉ có 1 identity source [Fact](https://docs.aws.amazon.com/singlesignon/latest/userguide/manage-your-identity-source.html) |
+| Tạo tài khoản `@techxcorp.com` cho từng người XBrain | Mỗi người có hai tài khoản và hai mật khẩu; khi nghỉ việc ở XBrain, tài khoản TechX không tự bị khoá |
+| Thêm tenant XBrain làm identity source thứ hai | IAM Identity Center chỉ hỗ trợ một identity source cho mỗi instance |
 
-## 3. Các bước
+## Xử lý sự cố
 
-### A. Cho phép tenant XBrain vào TechX
-
-| # | Làm ở đâu | Ai làm (role cần) | Việc | Vì sao | Kiểm tra xong |
-|---|---|---|---|---|---|
-| A1 | Tenant XBrain | Groups Administrator | Tạo group Security chứa user XBrain cần vào AWS | Giới hạn chỉ group này được vào TechX | Group có đủ member |
-| A2 | Entra TechX → External Identities → Cross-tenant access settings → Organizational settings | Security Administrator (TechX) | Add organization: nhập tenant ID hoặc domain `xbrain.com.vn` | Khai báo tenant đối tác | XBrain xuất hiện trong danh sách |
-| A3 | Như trên → XBrain → Inbound access → B2B collaboration | Security Administrator (TechX) | Chọn "Select external users and groups", nhập Object ID group ở A1 | Chặn mọi user XBrain khác | Chỉ group A1 được Allow |
-| A4 | Như trên → Trust settings | Security Administrator (TechX) | Tin MFA của tenant XBrain [Recommendation] | User không phải đăng ký MFA lần 2 | Đăng nhập không hỏi đăng ký MFA mới |
-
-### B. Đưa user XBrain thành guest
-
-| # | Làm ở đâu | Ai làm | Việc | Vì sao | Kiểm tra xong |
-|---|---|---|---|---|---|
-| B1 | Tenant XBrain | Groups Administrator | Thêm user vào group A1 | Chỉ member group mới được mời | User có trong group |
-| B2 | Entra TechX → Users → New user → Invite external user | Guest Inviter / User Administrator (TechX) | Mời user bằng email `@xbrain.com.vn` | Tạo guest object trong TechX | User type = Guest |
-| B3 | Mail của user | User | Bấm link chấp nhận. Không có mail: copy link invite ở B2 gửi user | Hoàn tất redeem | Invitation state = Accepted |
-
-Lỗi khi chấp nhận: kiểm tra lại user đã nằm trong group A1 chưa.
-
-### C. Cấp quyền AWS
-
-| # | Làm ở đâu | Ai làm | Việc | Vì sao | Kiểm tra xong |
-|---|---|---|---|---|---|
-| C1 | Entra TechX → Enterprise apps → AWS IAM Identity Center → Users and groups | Cloud Application Administrator (TechX) | Gán guest (hoặc group trong TechX chứa guest) vào app | Chỉ user được gán mới SCIM sang AWS | User/group có trong danh sách |
-| C2 | Như trên → Provisioning | Như trên | Provision on demand, hoặc chờ chu kỳ ~40 phút [Fact](https://learn.microsoft.com/en-us/entra/identity/app-provisioning/how-provisioning-works) | Đẩy user sang IIC | Provisioning log Success |
-| C3 | AWS IAM Identity Center → Users | Admin IIC | Kiểm tra user, gán vào group / permission set | User có quyền vào account | User đăng nhập access portal thấy account |
-
-## 4. Lỗi thường gặp
-
-| Lỗi | Nguyên nhân | Cách xử lý |
-|---|---|---|
-| "You do not have permission to view this data" ở Cross-tenant access settings | Tài khoản thiếu role Security Administrator ở tenant đó | Xin role, hoặc nhờ admin tenant làm |
-| User không nhận mail invite | Mail bị lọc | Copy link invite ở B2 gửi trực tiếp |
-| User không xuất hiện ở IIC | Chưa gán vào app, hoặc chưa tới chu kỳ provisioning | Kiểm tra C1, chạy Provision on demand |
+**"You do not have permission to view this data" ở Cross-tenant access settings**
+Tài khoản thiếu role Security Administrator ở tenant đó. Xin cấp role hoặc nhờ admin của tenant thực hiện.
 
 ![Thiếu quyền](../images/xbrain-no-permission.png)
 
-## 5. Câu hỏi mở
+**Guest user không đăng nhập được AWS access portal**
+Kiểm tra claim condition cho External guests ở Bước 4.
 
-1. Dùng **B2B invite** (mời tay) hay **Cross-tenant sync** (tự tạo và tự xoá guest khi đổi group ở XBrain)? Cross-tenant sync cần bật Outbound ở XBrain và "Allow users sync into this tenant" ở TechX [Fact](https://learn.microsoft.com/en-us/entra/identity/multi-tenant-organizations/cross-tenant-synchronization-overview).
-2. Group gán vào app AWS ở C1 là group nào? Group của tenant XBrain không gán được vào app của tenant TechX, cần một group trong TechX chứa guest.
-3. Thuộc tính `userName` khi SCIM guest sang IIC map từ `mail` hay UPN? UPN của guest có dạng `user_xbrain.com.vn#EXT#@...` [Assumption, cần test].
-4. TechX có bật trust MFA từ XBrain (A4) không?
-5. Offboarding: ai xoá guest ở TechX khi người XBrain nghỉ? Có access review định kỳ không?
-6. Phía XBrain ai giữ role Security Administrator để cấu hình Outbound (nếu chọn sync)?
-7. 6 group `xbrain-aws-*` đã tạo ở tenant XBrain dùng làm nguồn cho A1, hay cần dựng lại group tương ứng trong TechX?
+**User không xuất hiện trong IAM Identity Center**
+Kiểm tra user là member trực tiếp của group đã gán ở Bước 5, sau đó chạy **Provision on demand** và xem **Provisioning logs**.
 
-## Nguồn
+## Câu hỏi mở
 
-- [Fact] Cross-tenant access overview – https://learn.microsoft.com/en-us/entra/external-id/cross-tenant-access-overview
-- [Fact] B2B collaboration – https://learn.microsoft.com/en-us/entra/external-id/what-is-b2b
-- [Fact] Cross-tenant synchronization – https://learn.microsoft.com/en-us/entra/identity/multi-tenant-organizations/cross-tenant-synchronization-overview
-- [Fact] Entra provisioning cycle – https://learn.microsoft.com/en-us/entra/identity/app-provisioning/how-provisioning-works
-- [Fact] Entra ↔ AWS IAM Identity Center provisioning – https://learn.microsoft.com/en-us/entra/identity/saas-apps/aws-single-sign-on-provisioning-tutorial
-- [Fact] IIC identity source – https://docs.aws.amazon.com/singlesignon/latest/userguide/manage-your-identity-source.html
+1. Dùng B2B invitation (mời thủ công) hay cross-tenant synchronization (tự tạo và tự xoá guest theo group ở tenant XBrain)? Cross-tenant synchronization cần cấu hình outbound ở tenant XBrain. Xem [Cross-tenant synchronization](https://learn.microsoft.com/en-us/entra/identity/multi-tenant-organizations/cross-tenant-synchronization-overview).
+2. Khi một người nghỉ việc ở XBrain, ai xoá guest user ở tenant TechX? Có access review định kỳ không?
+3. Sáu group `xbrain-aws-*` ở tenant XBrain dùng làm nguồn cho Bước 1, hay cần tạo group tương ứng trong tenant TechX ở Bước 5?
+
+## Bước tiếp theo
+
+- [Assign user access to AWS accounts](https://docs.aws.amazon.com/singlesignon/latest/userguide/assignusers.html)
+- [Configure SAML and SCIM with Microsoft Entra ID and IAM Identity Center](https://docs.aws.amazon.com/singlesignon/latest/userguide/idp-microsoft-entra.html)

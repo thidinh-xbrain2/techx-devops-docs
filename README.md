@@ -20,7 +20,7 @@ Tài liệu DevOps để review và để team đọc làm theo. Mỗi doc trả
 
 ## Quy ước
 
-- Viết ngắn: mỗi bước một dòng, có cột "Vì sao".
+- Văn phong AWS docs: mở bài, Cách hoạt động, Điều kiện tiên quyết, Bước N với thủ tục "Để …", Xử lý sự cố, Bước tiếp theo. Mẫu: doc 01.
 - Sơ đồ dùng Mermaid; ảnh chụp chỉ để minh hoạ màn hình.
 - Tag: [Confirmed], [Fact] (kèm link), [Assumption], [Recommendation].
 - Không ghi mật khẩu, token, SCIM token, account ID thật nếu chưa được phép.

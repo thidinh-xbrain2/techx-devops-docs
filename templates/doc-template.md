@@ -1,35 +1,63 @@
-# NN · Tên doc
+# <Động từ + kết quả, ví dụ: Cho phép user X đăng nhập Y>
 
 **Người soạn:** Nguyễn Đình Thi · **Trạng thái:** Nháp / Chờ review / Đã duyệt · **Người đọc:** review / vận hành
 
-## 1. Bài toán
+*Trang này giả định <điều kiện đã có sẵn>.*
 
-Một đoạn 2–3 câu: hiện trạng, cần đạt gì, ai dùng.
+<Đoạn mở bài 2–4 câu: hiện trạng, trang này hướng dẫn làm gì, kết quả sau khi làm.> Để biết thêm, xem [<tiêu đề tài liệu chính thức>](<link>).
 
-## 2. Giải pháp
+## Cách hoạt động
 
 ```mermaid
 flowchart LR
-  A[Nguồn] --> B[Bước] --> C[Kết quả]
+  A[Nguồn] --> B[Thành phần] --> C[Kết quả]
 ```
 
-Phương án đã chọn và lý do. Phương án đã loại và lý do loại.
+1. <Bước của luồng, viết ở thì hiện tại.>
+2.
 
-## 3. Các bước
+## Điều kiện tiên quyết
 
-| # | Làm ở đâu | Ai làm (role cần) | Việc | Vì sao | Kiểm tra xong |
-|---|---|---|---|---|---|
-| 1 | | | | | |
+Trước khi bắt đầu, hãy đảm bảo:
 
-## 4. Lỗi thường gặp
+- Bạn có role **<role>** ở <nơi>.
+-
 
-| Lỗi | Nguyên nhân | Cách xử lý |
-|---|---|---|
+> **Quan trọng**
+> <Điều sẽ làm hỏng hoặc chặn quy trình nếu bỏ qua.>
 
-## 5. Câu hỏi mở
+## Bước 1: <Động từ + đối tượng>
+
+**Để <làm việc gì>**
+
+1. Đăng nhập <console>.
+2. Chọn **<Menu>** > **<Mục>**.
+3.
+
+> **Lưu ý**
+> <Thông tin phụ, cách xử lý tình huống thường gặp.>
+
+**Để xác minh**
+
+- <Kết quả nhìn thấy được trên console.>
+
+## Bước 2: <Động từ + đối tượng>
+
+## Phương án đã loại
+
+| Phương án | Lý do loại |
+|---|---|
+| | |
+
+## Xử lý sự cố
+
+**<Thông báo lỗi hoặc triệu chứng>**
+<Nguyên nhân. Cách xử lý.>
+
+## Câu hỏi mở
 
 1.
 
-## Nguồn
+## Bước tiếp theo
 
-- [Fact] tiêu đề – link
+- [<Trang liên quan>](<link>)
