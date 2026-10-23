@@ -102,8 +102,8 @@ e('e3', 'xb-user', 'tx-guest', 'được mời')
 e('e-cta', 'tx-cta', 'tx-guest-box', 'kiểm soát', dashed=True, extra='exitX=0.5;exitY=0;entryX=0.5;entryY=1;')
 e('e5a', 'tx-guest', 'tx-group', 'member')
 e('e5b', 'tx-group', 'tx-app', 'assigned')
-e('e5c', 'tx-app', 'aws-iic', 'SCIM', extra='exitX=1;exitY=0.35;entryX=0;entryY=0.35;')
-e('e-saml', 'tx-app', 'aws-iic', 'SAML', dashed=True, extra='exitX=1;exitY=0.75;entryX=0;entryY=0.75;')
+e('e5c', 'tx-app', 'aws-iic', 'SCIM', extra='exitX=1;exitY=0.5;entryX=0;entryY=0.5;')
+e('e-saml', 'tx-app', 'aws-iic', 'SAML', dashed=True, extra='exitX=1;exitY=0.85;entryX=0;entryY=0.85;')
 e('e6a', 'aws-iic', 'aws-ps', 'gán')
 e('e6b', 'aws-ps', 'aws-acc', 'truy cập')
 e('e-auth', 'tx-guest', 'xb-entra', 'chuyển về xác thực', dashed=True, extra='exitX=0.5;exitY=0;entryX=1;entryY=0.5;')
@@ -112,8 +112,8 @@ e('e-auth', 'tx-guest', 'xb-entra', 'chuyển về xác thực', dashed=True, ex
 badge(1, 197, 521)
 badge(2, 262, 580)
 badge(3, 262, 390)
-badge(4, 946, 340)
-badge(5, 582, 390)
+badge(5, 1030, 390)
+badge(4, 582, 390)
 badge(6, 1332, 390)
 
 # Legend
@@ -124,8 +124,8 @@ steps = [
     ('Tạo security group', 'Tenant XBrain tạo group chứa người cần truy cập AWS.'),
     ('Cho phép tenant XBrain', 'TechX thêm XBrain vào Cross-tenant access settings, chỉ cho phép group ở bước 1, tin MFA của XBrain.'),
     ('Mời guest', 'TechX mời user XBrain; user chấp nhận lời mời và trở thành guest.'),
-    ('Cấu hình claim', 'Name ID của guest lấy từ user.mail thay cho UPN dạng #EXT#.'),
     ('Gán và đồng bộ', 'Guest vào group TechX, group được gán vào app; SCIM đồng bộ sang IAM Identity Center.'),
+    ('Cấu hình claim', 'Name ID của guest trong SAML lấy từ user.mail thay cho UPN dạng #EXT#.'),
     ('Cấp quyền AWS', 'Gán group với permission set và account; user đăng nhập access portal bằng SAML.'),
 ]
 for i, (t, d) in enumerate(steps, 1):
