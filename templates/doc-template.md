@@ -1,7 +1,5 @@
 # <Động từ + kết quả, ví dụ: Cho phép user X đăng nhập Y>
 
-**Người soạn:** Nguyễn Đình Thi · **Trạng thái:** Nháp / Chờ review / Đã duyệt · **Người đọc:** review / vận hành
-
 *Trang này giả định <điều kiện đã có sẵn>.*
 
 <Đoạn mở bài 2–4 câu: hiện trạng, trang này hướng dẫn làm gì, kết quả sau khi làm.> Để biết thêm, xem [<tiêu đề tài liệu chính thức>](<link>).
@@ -53,10 +51,6 @@ Trước khi bắt đầu, hãy đảm bảo:
 
 **<Thông báo lỗi hoặc triệu chứng>**
 <Nguyên nhân. Cách xử lý.>
-
-## Câu hỏi mở
-
-1.
 
 ## Bước tiếp theo
 

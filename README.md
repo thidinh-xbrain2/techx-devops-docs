@@ -4,9 +4,9 @@ Tài liệu DevOps để review và để team đọc làm theo. Mỗi doc trả
 
 ## Danh sách doc
 
-| Doc | Nội dung | Trạng thái |
-|---|---|---|
-| [01 · Cross-tenant access](docs/01-cross-tenant-access.md) | User `@xbrain.com.vn` đăng nhập AWS Landing Zone qua Entra ID của TechX | Chờ review |
+| Doc | Nội dung |
+|---|---|
+| [01 · Cross-tenant access](docs/01-cross-tenant-access.md) | User `@xbrain.com.vn` đăng nhập AWS Landing Zone qua Entra ID của TechX |
 
 ## Cấu trúc
 
@@ -24,5 +24,5 @@ Tài liệu DevOps để review và để team đọc làm theo. Mỗi doc trả
 - Sơ đồ dùng Mermaid; ảnh chụp chỉ để minh hoạ màn hình.
 - Tag: [Confirmed], [Fact] (kèm link), [Assumption], [Recommendation].
 - Không ghi mật khẩu, token, SCIM token, account ID thật nếu chưa được phép.
-- Câu hỏi chưa chốt để ở mục "Câu hỏi mở" cuối doc.
+- Doc chỉ ghi nội dung đã chốt. Không ghi dòng người soạn hay trạng thái, không để mục "chờ bổ sung" hay câu hỏi mở; câu hỏi chưa chốt trao đổi riêng.
 - Review qua git (commit, PR); sau khi duyệt mới chuyển sang Confluence.
