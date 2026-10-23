@@ -1,7 +1,5 @@
 # Cho phép user XBrain đăng nhập AWS Landing Zone qua Microsoft Entra ID của TechX
 
-**Người soạn:** Nguyễn Đình Thi · **Trạng thái:** Chờ review · **Người đọc:** người review, admin Entra ID của TechX và XBrain
-
 > **Tóm tắt**
 > User XBrain truy cập AWS Landing Zone của TechX dưới dạng guest (B2B collaboration) trong tenant Entra ID của TechX, đăng nhập bằng tài khoản `@xbrain.com.vn`. Quy trình gồm 6 bước; thời gian chờ chủ yếu nằm ở chu kỳ provisioning sang IAM Identity Center (khoảng 40 phút, có thể rút ngắn bằng Provision on demand).
 
