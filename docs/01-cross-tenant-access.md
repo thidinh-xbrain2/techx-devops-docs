@@ -20,8 +20,37 @@ Mỗi instance IAM Identity Center chỉ có một identity source, vì vậy kh
 3. Admin TechX mời user XBrain. Mỗi user trở thành một guest user trong tenant TechX.
 4. Guest user được thêm vào group cùng tên trong tenant TechX; group được gán vào enterprise application **AWS IAM Identity Center** và đồng bộ sang IAM Identity Center bằng SCIM.
 5. Enterprise application được cấu hình để guest dùng `user.mail` làm Name ID trong SAML assertion.
-6. Group được gán với permission set và AWS account. Khi đăng nhập, Entra ID của TechX chuyển user về tenant XBrain để xác thực, sau đó gửi SAML assertion về IAM Identity Center như sơ đồ dưới đây.
+6. Group được gán với permission set và AWS account. Khi đăng nhập, Entra ID của TechX chuyển user về tenant XBrain để xác thực, sau đó gửi SAML assertion về IAM Identity Center.
 
+**Luồng mời user (làm một lần cho mỗi user)**
+
+```mermaid
+sequenceDiagram
+  autonumber
+  actor AX as Admin XBrain
+  actor AT as Admin TechX
+  actor U as User XBrain
+  box Tenant XBrain
+    participant X as Entra ID XBrain
+  end
+  box Tenant TechX
+    participant T as Entra ID TechX
+  end
+  box AWS của TechX
+    participant IIC as IAM Identity Center
+  end
+  AX->>X: Thêm user vào group xbrain-aws-*
+  AT->>T: Cross-tenant access: inbound B2B collaboration chỉ cho group xbrain-aws-*
+  AT->>T: Invite external user (email @xbrain.com.vn)
+  T-->>U: Gửi email mời
+  U->>X: Chấp nhận lời mời, đăng nhập bằng tài khoản XBrain
+  X-->>T: Xác thực thành công
+  T->>T: Kiểm tra user thuộc group được phép, tạo guest user
+  AT->>T: Thêm guest vào group cùng tên
+  T->>IIC: Đồng bộ user và group bằng SCIM
+```
+
+**Luồng đăng nhập (mỗi lần truy cập)**
 
 ```mermaid
 sequenceDiagram
