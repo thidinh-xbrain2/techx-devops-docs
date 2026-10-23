@@ -30,13 +30,13 @@ Mỗi instance IAM Identity Center chỉ có một identity source, vì vậy kh
 sequenceDiagram
   autonumber
   actor U as User XBrain
-  box rgb(255,243,224) AWS của TechX
+  box rgba(255,153,0,0.12) AWS của TechX
     participant AWS as AWS access portal
   end
-  box rgb(241,234,248) Tenant TechX
+  box rgba(140,79,255,0.12) Tenant TechX
     participant T as Entra ID TechX
   end
-  box rgb(229,241,251) Tenant XBrain
+  box rgba(0,120,212,0.12) Tenant XBrain
     participant X as Entra ID XBrain
   end
   U->>AWS: Mở access portal
@@ -146,20 +146,6 @@ Email của guest user có dạng `exampleuser_domain.com#EXT#@domain.onmicrosof
 1. Trong IAM Identity Center, chọn **Users** và kiểm tra guest user đã xuất hiện.
 2. Gán group vào AWS account với permission set tương ứng.
 3. User mở AWS access portal, đăng nhập bằng tài khoản `@xbrain.com.vn` và kiểm tra thấy đúng account.
-
-## Bằng chứng
-
-Quy trình chưa được thực hiện trên tenant TechX. Ảnh chụp sẽ được bổ sung vào các bước tương ứng sau lần triển khai đầu tiên.
-
-| # | Bằng chứng | Bước | Trạng thái |
-|---|---|---|---|
-| 1 | Tenant XBrain có trong **Organizational settings** | 2 | Chờ bổ sung |
-| 2 | Inbound **B2B collaboration** chỉ cho phép group XBrain | 2 | Chờ bổ sung |
-| 3 | **Trust settings** đã bật MFA | 2 | Chờ bổ sung |
-| 4 | Guest user có **User type** = Guest, **Invitation state** = Accepted | 3 | Chờ bổ sung |
-| 5 | Claim condition cho Members và External guests | 5 | Chờ bổ sung |
-| 6 | **Provisioning logs** báo Success | 4 | Chờ bổ sung |
-| 7 | Guest user xuất hiện trong IAM Identity Center và đăng nhập được access portal | 6 | Chờ bổ sung |
 
 ## Phương án đã loại
 
