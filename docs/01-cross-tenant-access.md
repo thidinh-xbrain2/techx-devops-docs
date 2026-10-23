@@ -88,13 +88,16 @@ Trước khi bắt đầu, hãy đảm bảo:
 
 ## Bước 1: Tạo security group ở tenant XBrain
 
-**Để tạo security group**
+Tạo sáu group theo vai trò: `xbrain-aws-org-admins`, `xbrain-aws-platform-admins`, `xbrain-aws-security`, `xbrain-aws-devops`, `xbrain-aws-finance` và `xbrain-aws-prod-emergency`.
+
+**Để tạo một security group**
 
 1. Đăng nhập [Microsoft Entra admin center](https://entra.microsoft.com) của tenant XBrain.
 2. Chọn **Groups** > **All groups** > **New group**.
 3. Trong **Group type**, chọn **Security**. Trong **Membership type**, chọn **Assigned**.
 4. Nhập tên group, thêm các user cần truy cập AWS, sau đó chọn **Create**.
 5. Mở group vừa tạo và ghi lại **Object ID**. Bạn cần giá trị này ở Bước 2.
+6. Lặp lại với năm group còn lại.
 
 ## Bước 2: Cho phép tenant XBrain trong cross-tenant access settings của TechX
 
@@ -110,7 +113,7 @@ Trước khi bắt đầu, hãy đảm bảo:
 1. Trong danh sách organization, chọn **Inherited from default** ở cột **Inbound access** của XBrain. Trang cấu hình có bốn tab: **B2B collaboration**, **B2B direct connect**, **Trust settings** và **Cross-tenant sync**. Quy trình này chỉ dùng tab **B2B collaboration** và **Trust settings**.
 2. Chọn tab **B2B collaboration**, sau đó chọn **Customize settings**. Nếu giữ **Inherited from default**, tenant XBrain dùng cấu hình mặc định của tenant TechX và không giới hạn được theo group.
 3. Trong **External users and groups**, chọn **Allow access** và **Select external users and groups**.
-4. Chọn **Add external users and groups**, nhập Object ID của group ở Bước 1, sau đó chọn **Save**.
+4. Chọn **Add external users and groups**, nhập Object ID của sáu group ở Bước 1, sau đó chọn **Save**.
 
 **Để tin MFA của tenant XBrain (khuyến nghị)**
 
@@ -150,7 +153,7 @@ Trước khi bắt đầu, hãy đảm bảo:
    - `xbrain-aws-prod-emergency`
 
    Dùng cùng tên ở hai tenant giúp đối chiếu thành viên dễ dàng. Group ở tenant XBrain quyết định ai được mời; group ở tenant TechX là group được gán vào enterprise application.
-2. Chọn **Enterprise applications** > **AWS IAM Identity Center** > **Users and groups** > **Add user/group**, chọn group vừa tạo, sau đó chọn **Assign**.
+2. Chọn **Enterprise applications** > **AWS IAM Identity Center** > **Users and groups** > **Add user/group**, chọn sáu group vừa tạo, sau đó chọn **Assign**.
 3. Chọn **Provisioning** > **Provision on demand** để đồng bộ ngay, hoặc đợi chu kỳ đồng bộ tiếp theo (khoảng 40 phút). Để biết thêm, xem [How provisioning works](https://learn.microsoft.com/en-us/entra/identity/app-provisioning/how-provisioning-works).
 
 > **Quan trọng**
@@ -170,13 +173,16 @@ Email của guest user có dạng `exampleuser_domain.com#EXT#@domain.onmicrosof
    - User type **External guests**: source attribute `user.mail`.
 5. Chọn **Save**.
 
-## Bước 6: Xác minh truy cập AWS
+## Bước 6: Gán quyền và xác minh truy cập AWS
+
+**Để gán quyền**
+
+1. Trong IAM Identity Center, chọn **Users** và kiểm tra guest user đã xuất hiện.
+2. Chọn **AWS accounts**, chọn account, sau đó gán group với permission set tương ứng. Để biết thêm, xem [Assign user access to AWS accounts](https://docs.aws.amazon.com/singlesignon/latest/userguide/assignusers.html).
 
 **Để xác minh**
 
-1. Trong IAM Identity Center, chọn **Users** và kiểm tra guest user đã xuất hiện.
-2. Gán group vào AWS account với permission set tương ứng.
-3. User mở AWS access portal, đăng nhập bằng tài khoản `@xbrain.com.vn` và kiểm tra thấy đúng account.
+- User mở AWS access portal, đăng nhập bằng tài khoản `@xbrain.com.vn` và kiểm tra thấy đúng account và permission set.
 
 ## Thu hồi quyền khi user nghỉ việc ở XBrain
 
@@ -185,7 +191,7 @@ Khi tài khoản `@xbrain.com.vn` bị khoá ở tenant XBrain, guest user khôn
 **Để thu hồi quyền**
 
 1. XBrain gửi danh sách user nghỉ việc cho admin TechX.
-2. Trong tenant TechX, admin gỡ guest user khỏi group `xbrain-aws-*`. Ở chu kỳ provisioning tiếp theo, SCIM xoá user khỏi IAM Identity Center.
+2. Trong tenant TechX, admin gỡ guest user khỏi group `xbrain-aws-*`. Ở chu kỳ provisioning tiếp theo, SCIM gỡ user khỏi IAM Identity Center. Chạy **Provision on demand** nếu cần gỡ ngay.
 3. Admin xoá guest user khỏi tenant TechX: chọn **Users** > **All users**, chọn user, sau đó chọn **Delete**.
 
 **Để xác minh**
@@ -215,5 +221,4 @@ Kiểm tra user là member trực tiếp của group đã gán ở Bước 4, sa
 
 ## Bước tiếp theo
 
-- [Assign user access to AWS accounts](https://docs.aws.amazon.com/singlesignon/latest/userguide/assignusers.html)
 - [Configure SAML and SCIM with Microsoft Entra ID and IAM Identity Center](https://docs.aws.amazon.com/singlesignon/latest/userguide/idp-microsoft-entra.html)
