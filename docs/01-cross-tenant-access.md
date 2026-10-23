@@ -24,17 +24,16 @@ Mỗi instance IAM Identity Center chỉ có một identity source, vì vậy kh
 
 
 ```mermaid
-%%{init: {"theme": "neutral", "themeVariables": {"fontFamily": "Arial, Helvetica, sans-serif", "fontSize": "14px"}}}%%
 sequenceDiagram
   autonumber
   actor U as User XBrain
-  box rgba(255,153,0,0.12) AWS của TechX
+  box AWS của TechX
     participant AWS as AWS access portal
   end
-  box rgba(140,79,255,0.12) Tenant TechX
+  box Tenant TechX
     participant T as Entra ID TechX
   end
-  box rgba(0,120,212,0.12) Tenant XBrain
+  box Tenant XBrain
     participant X as Entra ID XBrain
   end
   U->>AWS: Mở access portal
