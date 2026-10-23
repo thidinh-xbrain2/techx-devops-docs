@@ -18,39 +18,43 @@ Mỗi instance IAM Identity Center chỉ có một identity source, vì vậy kh
 ```mermaid
 flowchart LR
   subgraph X["Tenant XBrain (xbrain.com.vn)"]
-    XU[User XBrain] --> XG[Security group]
+    XU[User XBrain]
+    XG[Security group XBrain]
+    XU -->|member| XG
   end
   subgraph T["Tenant TechX (techxcorp.com)"]
-    CTA[Cross-tenant access settings]
+    CTA["Cross-tenant access settings<br/>Inbound B2B: chỉ group XBrain"]
     GU[Guest user]
     TG[Group trong TechX]
-    APP[Enterprise app<br/>AWS IAM Identity Center]
+    APP["Enterprise app<br/>AWS IAM Identity Center"]
+    GU -->|member| TG
+    TG -->|assigned| APP
   end
-  subgraph A[AWS Landing Zone]
-    IIC[IAM Identity Center] --> PS[Permission set và account]
+  subgraph A[AWS Landing Zone của TechX]
+    IIC[IAM Identity Center]
+    PS[Permission set]
+    ACC[AWS account]
+    IIC --> PS --> ACC
   end
-  XG --> CTA --> GU --> TG --> APP
-  APP -->|SAML| IIC
-  APP -->|SCIM| IIC
+  XG -.->|"Bước 2: được phép"| CTA
+  XU -->|"Bước 3: được mời"| GU
+  APP -->|"Bước 5: SCIM đồng bộ user, group"| IIC
+  APP -->|"SAML: đăng nhập"| IIC
 ```
-
-1. Admin TechX cho phép tenant XBrain trong **Cross-tenant access settings**, chỉ áp dụng cho một security group của XBrain.
-2. Admin TechX mời user XBrain. Mỗi user trở thành một guest user trong tenant TechX.
-3. Guest user được thêm vào một group trong tenant TechX. Group này được gán vào enterprise application **AWS IAM Identity Center**.
-4. Microsoft Entra ID provisioning service đồng bộ user và group sang IAM Identity Center bằng SCIM.
-5. Khi user mở AWS access portal, Entra ID của TechX chuyển user về tenant XBrain để xác thực, sau đó gửi SAML assertion về IAM Identity Center.
 
 ```mermaid
 sequenceDiagram
-  participant U as User XBrain
+  actor U as User XBrain
   participant AWS as AWS access portal
   participant T as Entra ID TechX
   participant X as Entra ID XBrain
   U->>AWS: Mở access portal
-  AWS->>T: Chuyển hướng SAML
-  T->>X: Xác thực tại tenant gốc
-  X-->>T: Kết quả xác thực và MFA
-  T-->>AWS: SAML assertion
+  AWS->>T: Chuyển hướng kèm SAML request
+  T->>X: Nhận diện guest, chuyển về tenant gốc
+  U->>X: Nhập mật khẩu và MFA
+  X-->>T: Xác thực thành công
+  T->>T: Kiểm tra cross-tenant policy và quyền gán app
+  T-->>AWS: SAML assertion (Name ID = user.mail)
   AWS-->>U: Danh sách account và permission set
 ```
 
@@ -151,6 +155,20 @@ Email của guest user có dạng `exampleuser_domain.com#EXT#@domain.onmicrosof
 1. Trong IAM Identity Center, chọn **Users** và kiểm tra guest user đã xuất hiện.
 2. Gán group vào AWS account với permission set tương ứng.
 3. User mở AWS access portal, đăng nhập bằng tài khoản `@xbrain.com.vn` và kiểm tra thấy đúng account.
+
+## Bằng chứng
+
+Quy trình chưa được thực hiện trên tenant TechX. Ảnh chụp sẽ được bổ sung vào các bước tương ứng sau lần triển khai đầu tiên.
+
+| # | Bằng chứng | Bước | Trạng thái |
+|---|---|---|---|
+| 1 | Tenant XBrain có trong **Organizational settings** | 2 | Chờ bổ sung |
+| 2 | Inbound **B2B collaboration** chỉ cho phép group XBrain | 2 | Chờ bổ sung |
+| 3 | **Trust settings** đã bật MFA | 2 | Chờ bổ sung |
+| 4 | Guest user có **User type** = Guest, **Invitation state** = Accepted | 3 | Chờ bổ sung |
+| 5 | Claim condition cho Members và External guests | 4 | Chờ bổ sung |
+| 6 | **Provisioning logs** báo Success | 5 | Chờ bổ sung |
+| 7 | Guest user xuất hiện trong IAM Identity Center và đăng nhập được access portal | 6 | Chờ bổ sung |
 
 ## Phương án đã loại
 
