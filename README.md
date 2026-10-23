@@ -1,4 +1,4 @@
-# XBrain DevOps Docs
+# TechX DevOps Docs
 
 Tài liệu DevOps để review và để team đọc làm theo. Mỗi doc trả lời: làm gì, làm ở đâu, ai làm, vì sao, kiểm tra thế nào.
 

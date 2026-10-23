@@ -2,6 +2,9 @@
 
 **Người soạn:** Nguyễn Đình Thi · **Trạng thái:** Chờ review · **Người đọc:** người review, admin Entra ID của TechX và XBrain
 
+> **Tóm tắt**
+> User XBrain truy cập AWS Landing Zone của TechX dưới dạng guest (B2B collaboration) trong tenant Entra ID của TechX, đăng nhập bằng tài khoản `@xbrain.com.vn`. Quy trình gồm 6 bước; thời gian chờ chủ yếu nằm ở chu kỳ provisioning sang IAM Identity Center (khoảng 40 phút, có thể rút ngắn bằng Provision on demand).
+
 *Trang này giả định IAM Identity Center của AWS Landing Zone đã được kết nối với tenant Microsoft Entra ID của TechX bằng SAML và SCIM.*
 
 AWS Landing Zone dùng tenant Microsoft Entra ID của TechX (`techxcorp.com`) làm identity source cho IAM Identity Center. User của XBrain có tài khoản ở một tenant khác (`xbrain.com.vn`). Trang này hướng dẫn cách đưa user XBrain vào tenant TechX dưới dạng guest (B2B collaboration), để họ đăng nhập AWS access portal bằng chính tài khoản XBrain.
@@ -61,6 +64,9 @@ Trước khi bắt đầu, hãy đảm bảo:
 
 > **Quan trọng**
 > Tài khoản không có role Security Administrator sẽ nhận thông báo *You do not have permission to view this data* khi mở **Cross-tenant access settings**.
+
+> **Lưu ý**
+> Đường dẫn **External Identities** > **Cross-tenant access settings** > **Organizational settings** đã được đối chiếu trên console. Các tên menu còn lại ở Bước 2 và Bước 3 được viết theo tài liệu Microsoft và sẽ được cập nhật theo ảnh chụp khi thực hiện trên tenant TechX.
 
 ## Bước 1: Tạo security group ở tenant XBrain
 
@@ -131,7 +137,7 @@ Email của guest user có dạng `exampleuser_domain.com#EXT#@domain.onmicrosof
 
 **Để gán user và đồng bộ**
 
-1. Trong tenant TechX, tạo một security group (ví dụ `xbrain-aws-devops`) và thêm các guest user XBrain vào group.
+1. Trong tenant TechX, tạo một security group cho guest user XBrain và thêm các guest vào group. Tên group cần khác với group ở tenant XBrain để tránh nhầm lẫn khi gán quyền, ví dụ `techx-aws-xbrain-devops` (tên chính thức chờ chốt).
 2. Chọn **Enterprise applications** > **AWS IAM Identity Center** > **Users and groups** > **Add user/group**, chọn group vừa tạo, sau đó chọn **Assign**.
 3. Chọn **Provisioning** > **Provision on demand** để đồng bộ ngay, hoặc đợi chu kỳ đồng bộ tiếp theo (khoảng 40 phút). Để biết thêm, xem [How provisioning works](https://learn.microsoft.com/en-us/entra/identity/app-provisioning/how-provisioning-works).
 
