@@ -58,9 +58,6 @@ Trước khi bắt đầu, hãy đảm bảo:
 > **Quan trọng**
 > Tài khoản không có role Security Administrator sẽ nhận thông báo *You do not have permission to view this data* khi mở **Cross-tenant access settings**.
 
-> **Lưu ý**
-> Đường dẫn **External Identities** > **Cross-tenant access settings** > **Organizational settings** đã được đối chiếu trên console. Các tên menu còn lại ở Bước 2 và Bước 3 được viết theo tài liệu Microsoft và sẽ được cập nhật theo ảnh chụp khi thực hiện trên tenant TechX.
-
 ## Bước 1: Tạo security group ở tenant XBrain
 
 **Để tạo security group**
@@ -82,8 +79,8 @@ Trước khi bắt đầu, hãy đảm bảo:
 
 **Để giới hạn user XBrain được phép vào**
 
-1. Trong danh sách organization, chọn **Inherited from default** ở cột **Inbound access** của XBrain.
-2. Chọn tab **B2B collaboration**, sau đó chọn **Customize settings**.
+1. Trong danh sách organization, chọn **Inherited from default** ở cột **Inbound access** của XBrain. Trang cấu hình có bốn tab: **B2B collaboration**, **B2B direct connect**, **Trust settings** và **Cross-tenant sync**. Quy trình này chỉ dùng tab **B2B collaboration** và **Trust settings**.
+2. Chọn tab **B2B collaboration**, sau đó chọn **Customize settings**. Nếu giữ **Inherited from default**, tenant XBrain dùng cấu hình mặc định của tenant TechX và không giới hạn được theo group.
 3. Trong **External users and groups**, chọn **Allow access** và **Select external users and groups**.
 4. Chọn **Add external users and groups**, nhập Object ID của group ở Bước 1, sau đó chọn **Save**.
 
@@ -151,6 +148,7 @@ Email của guest user có dạng `exampleuser_domain.com#EXT#@domain.onmicrosof
 |---|---|
 | Tạo tài khoản `@techxcorp.com` cho từng người XBrain | Mỗi người có hai tài khoản và hai mật khẩu; khi nghỉ việc ở XBrain, tài khoản TechX không tự bị khoá |
 | Thêm tenant XBrain làm identity source thứ hai | IAM Identity Center chỉ hỗ trợ một identity source cho mỗi instance |
+| Cross-tenant synchronization (tự tạo và tự xoá guest theo group ở tenant XBrain) | Microsoft thiết kế tính năng này cho các tenant trong cùng một tổ chức; XBrain và TechX là hai tổ chức riêng. Cách này còn cần cấu hình outbound ở tenant XBrain. Xem [Cross-tenant synchronization](https://learn.microsoft.com/en-us/entra/identity/multi-tenant-organizations/cross-tenant-synchronization-overview) |
 
 ## Xử lý sự cố
 
@@ -167,9 +165,8 @@ Kiểm tra user là member trực tiếp của group đã gán ở Bước 4, sa
 
 ## Câu hỏi mở
 
-1. Dùng B2B invitation (mời thủ công) hay cross-tenant synchronization (tự tạo và tự xoá guest theo group ở tenant XBrain)? Cross-tenant synchronization cần cấu hình outbound ở tenant XBrain. Xem [Cross-tenant synchronization](https://learn.microsoft.com/en-us/entra/identity/multi-tenant-organizations/cross-tenant-synchronization-overview).
-2. Khi một người nghỉ việc ở XBrain, ai xoá guest user ở tenant TechX? Có access review định kỳ không?
-3. Sáu group `xbrain-aws-*` ở tenant XBrain dùng làm nguồn cho Bước 1, hay cần tạo group tương ứng trong tenant TechX ở Bước 4?
+1. Khi một người nghỉ việc ở XBrain, ai xoá guest user ở tenant TechX? Có access review định kỳ không?
+2. Sáu group `xbrain-aws-*` ở tenant XBrain dùng làm nguồn cho Bước 1, hay cần tạo group tương ứng trong tenant TechX ở Bước 4?
 
 ## Bước tiếp theo
 
