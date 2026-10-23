@@ -96,7 +96,7 @@ node('aws-ps', 'Permission set', 'theo vai trò', 1400, 380, aws_res('permission
 node('aws-acc', 'AWS account', 'workload của TechX', 1600, 380, aws_res('organizations_account', '#E7157B'), '#FCE4EC', '#E7157B')
 
 # Edges
-e('e1', 'xb-user-box', 'xb-group-box', 'member', extra='exitX=0.5;exitY=1;entryX=0.5;entryY=0;')
+e('e1', 'xb-user-box', 'xb-group-box', '', extra='exitX=0.5;exitY=1;entryX=0.5;entryY=0;')
 e('e2', 'xb-group', 'tx-cta', 'được phép')
 e('e3', 'xb-user', 'tx-guest', 'được mời')
 e('e-cta', 'tx-cta', 'tx-guest-box', 'kiểm soát', dashed=True, extra='exitX=0.5;exitY=0;entryX=0.5;entryY=1;')
@@ -109,12 +109,12 @@ e('e6b', 'aws-ps', 'aws-acc', 'truy cập')
 e('e-auth', 'tx-guest', 'xb-entra', 'chuyển về xác thực', dashed=True, extra='exitX=0.5;exitY=0;entryX=1;entryY=0.5;')
 
 # Badges
-badge(1, 205, 520)
-badge(2, 240, 570)
-badge(3, 240, 350)
-badge(4, 990, 340)
-badge(5, 590, 340)
-badge(6, 1320, 340)
+badge(1, 197, 521)
+badge(2, 262, 580)
+badge(3, 262, 390)
+badge(4, 946, 340)
+badge(5, 582, 390)
+badge(6, 1332, 390)
 
 # Legend
 LX, LY = 1790, 130
