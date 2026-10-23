@@ -11,43 +11,34 @@ AWS Landing Zone dùng tenant Microsoft Entra ID của TechX (`techxcorp.com`) l
 
 Mỗi instance IAM Identity Center chỉ có một identity source, vì vậy không thể thêm tenant XBrain làm identity source thứ hai. Để biết thêm, xem [Manage your identity source](https://docs.aws.amazon.com/singlesignon/latest/userguide/manage-your-identity-source.html).
 
-![Tổng quan cross-tenant](../images/cross-tenant-overview.png)
-
 ## Cách hoạt động
 
-```mermaid
-flowchart LR
-  subgraph X["Tenant XBrain (xbrain.com.vn)"]
-    XU[User XBrain]
-    XG[Security group XBrain]
-    XU -->|member| XG
-  end
-  subgraph T["Tenant TechX (techxcorp.com)"]
-    CTA["Cross-tenant access settings<br/>Inbound B2B: chỉ group XBrain"]
-    GU[Guest user]
-    TG[Group trong TechX]
-    APP["Enterprise app<br/>AWS IAM Identity Center"]
-    GU -->|member| TG
-    TG -->|assigned| APP
-  end
-  subgraph A[AWS Landing Zone của TechX]
-    IIC[IAM Identity Center]
-    PS[Permission set]
-    ACC[AWS account]
-    IIC --> PS --> ACC
-  end
-  XG -.->|"Bước 2: được phép"| CTA
-  XU -->|"Bước 3: được mời"| GU
-  APP -->|"Bước 5: SCIM đồng bộ user, group"| IIC
-  APP -->|"SAML: đăng nhập"| IIC
-```
+![Kiến trúc cross-tenant](../images/cross-tenant-architecture.png)
+
+*Nguồn sơ đồ: [`cross-tenant-architecture.drawio`](../images/cross-tenant-architecture.drawio), mở bằng draw.io để chỉnh sửa.*
+
+1. Admin tenant XBrain tạo security group chứa người cần truy cập AWS.
+2. Admin TechX cho phép tenant XBrain trong **Cross-tenant access settings**, chỉ áp dụng cho group ở bước 1.
+3. Admin TechX mời user XBrain. Mỗi user trở thành một guest user trong tenant TechX.
+4. Enterprise application **AWS IAM Identity Center** được cấu hình để guest dùng `user.mail` làm Name ID.
+5. Guest user được thêm vào một group trong tenant TechX; group được gán vào enterprise application và đồng bộ sang IAM Identity Center bằng SCIM.
+6. Group được gán với permission set và AWS account. Khi đăng nhập, Entra ID của TechX chuyển user về tenant XBrain để xác thực, sau đó gửi SAML assertion về IAM Identity Center như sơ đồ dưới đây.
+
 
 ```mermaid
+%%{init: {"theme": "neutral", "themeVariables": {"fontFamily": "Arial, Helvetica, sans-serif", "fontSize": "14px"}}}%%
 sequenceDiagram
+  autonumber
   actor U as User XBrain
-  participant AWS as AWS access portal
-  participant T as Entra ID TechX
-  participant X as Entra ID XBrain
+  box rgb(255,243,224) AWS của TechX
+    participant AWS as AWS access portal
+  end
+  box rgb(241,234,248) Tenant TechX
+    participant T as Entra ID TechX
+  end
+  box rgb(229,241,251) Tenant XBrain
+    participant X as Entra ID XBrain
+  end
   U->>AWS: Mở access portal
   AWS->>T: Chuyển hướng kèm SAML request
   T->>X: Nhận diện guest, chuyển về tenant gốc
